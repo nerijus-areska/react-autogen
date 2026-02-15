@@ -140,7 +140,7 @@ class VibeClient:
                 
                 if data.get("app_url"):
                     # RICH LINK FORMAT: [link=URL]TEXT[/link]
-                    url = data['app_url']
+                    url = f"{data['app_url']}?session_id={self.session_id}"
                     msg += f"\n\n🔗 [bold underline white on blue link={url}] Click here to open App: {url} [/]"
                 
                 console.print(Panel(msg, title="System Ready", border_style="green"))

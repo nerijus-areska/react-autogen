@@ -305,3 +305,26 @@ It's pretty surprising that tool user consumed a tiny bit more output tokens.. b
   ![](images/Pasted%20image%2020260215133656.png)
 Having features as separate microcosms, allows for having a clear separation of concerns, and MUCH smaller files, which then should save on output tokens for simple_modification workflow.
 Also tool caller (explorative_modification) might benefit from easier identifying what needs to be changed ( and saving on input tokens too )
+
+
+
+# Bonus Round
+
+I wonder if Hostinger and others do this? Or did they try and it failed? Seems like a fun thing to do:
+
+Adding overlay (this is clickable from our client right now with session_id put into local storage)
+
+![](images/Pasted%20image%2020260215181140.png)
+
+Now user Can type messages directly inside the app.
+They can also use the target functionality to identify elements
+
+![](images/Pasted%20image%2020260215181219.png)
+
+This is after I clicked with my mouse on the Add Todo button . Note that we did not write anything into chat directly specifying it
+![](images/Pasted%20image%2020260215181409.png)
+
+![](images/Pasted%20image%2020260215181459.png)
+
+It worked :)
+![](images/Pasted%20image%2020260215181515.png)
