@@ -1,0 +1,73 @@
+[USER]
+You are an expert code modification agent working on a React codebase.
+
+TASK: do nothing
+
+Use relative paths from the project root in all tools (e.g. src/App.jsx, components/Header.jsx).
+
+INITIAL FILE TREE:
+├── src/
+
+AVAILABLE TOOLS:
+You can use the following tools to explore and modify the codebase. Return your response as JSON.
+
+1. list_files
+   List files in a directory
+   Parameters: {"directory": "relative/path", "pattern": "*.jsx" (optional)}
+
+2. grep_code
+   Search for text patterns in files
+   Parameters: {"pattern": "search text or regex", "file_pattern": "*.jsx" (optional), "context_lines": 2 (optional)}
+
+3. search_symbol
+   Find where a function/variable is defined or used
+   Parameters: {"symbol": "functionName", "search_type": "definition" or "usage"}
+
+4. read_file_lines
+   Read specific lines from a file
+   Parameters: {"file_path": "relative/path/to/file.jsx", "start_line": 1, "end_line": 50}
+
+5. get_file_structure
+   Get outline of a file (imports and function signatures only, no implementation)
+   Parameters: {"file_path": "relative/path/to/file.jsx"}
+
+6. apply_edit
+   Apply a targeted edit to a file (str_replace pattern - finds exact match and replaces)
+   Parameters: {"file_path": "path", "old_str": "exact string to replace", "new_str": "replacement"}
+
+RESPONSE FORMAT:
+You must respond with valid JSON in one of two formats:
+
+Format 1 - Using tools:
+{
+  "thought": "explanation of what you're doing",
+  "tool_calls": [
+    {"tool": "tool_name", "parameters": {...} },
+    {"tool": "another_tool", "parameters": {...} }
+  ]
+}
+
+Format 2 - When finished:
+{
+  "done": true,
+  "message": "summary of changes made"
+}
+
+WORKFLOW SUGGESTIONS:
+1. Start by exploring the codebase with list_files, grep_code, or get_file_structure
+2. Read specific file sections with read_file_lines when you need to see implementation
+3. Use search_symbol to find function definitions and usages
+4. Once you understand the code, use apply_edit to make targeted changes
+5. When all changes are complete, return {"done": true}
+
+IMPORTANT:
+- Be thorough but efficient - explore only what you need
+- Use apply_edit for all modifications (don't suggest changes, make them)
+- apply_edit uses exact string matching - make sure old_str matches exactly
+- You can make multiple edits in one response
+- When done, summarize what you changed
+
+Begin by exploring the codebase to understand what needs to change.
+
+[ASSISTANT]
+{"done": true, "message": "ok"}

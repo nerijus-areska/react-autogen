@@ -1,0 +1,1412 @@
+
+---
+REQUEST:
+You are analyzing a Vite/React/Tailwind CSS codebase to determine which files need to be modified.
+
+Project Structure:
+            Total files: 16
+            Files by type: {'css': 1, 'jsx': 13, 'js': 2}
+
+            File Tree:
+            ├── src/
+  ├── App.jsx (0.4KB) - Functions: App
+  ├── components/
+    ├── CallToAction.jsx (0.4KB) - Functions: CallToAction
+    ├── HeroImage.jsx (2.1KB) - Functions: HeroImage
+    ├── ScrollToTop.jsx (0.3KB) - Functions: ScrollToTop
+    ├── TodoApp.jsx (5.4KB) - Functions: TodoApp
+    ├── TodoForm.jsx (1.4KB) - Functions: TodoForm
+    ├── TodoItem.jsx (4.8KB) - Functions: TodoItem
+    ├── WelcomeMessage.jsx (0.4KB) - Functions: WelcomeMessage
+    ├── ui/
+      ├── button.jsx (1.5KB) - Functions: Button, Comp
+      ├── toast.jsx (3.7KB) - Functions: Toast, ToastAction, ToastClose, ToastDescription, ToastProvider
+      ├── toaster.jsx (0.7KB) - Functions: Toaster
+      ├── use-toast.js (2.0KB)
+  ├── index.css (0.3KB)
+  ├── lib/
+    ├── utils.js (0.1KB)
+  ├── main.jsx (0.2KB)
+  ├── pages/
+    ├── HomePage.jsx (1.2KB) - Functions: HomePage
+            
+
+User instruction: "Todos should have projects and due dates. We need three more pages (use React Router).
+* One to manage projects
+* One for Kanban view with drag and drop and 3 columns: New, Working, Done
+* One for Calendar view - which would show each TODO for their respective due date in the correct day slot
+Do not use any external libraries or packages."
+
+Analyze the instruction and file structure. Identify which files need to be modified to fulfill this instruction.
+
+Guidelines:
+- Be selective - only include files that will actually change
+- Consider component hierarchy and imports
+- For styling changes, include relevant CSS files
+- For component changes, include the component file and possibly parent files
+
+Return ONLY a JSON array of file paths, like: ["src/App.jsx", "src/styles.css"]
+No explanation, just the JSON array.
+
+
+RESPONSE:
+["src/App.jsx","src/main.jsx","src/components/TodoApp.jsx","src/components/TodoForm.jsx","src/components/TodoItem.jsx","src/pages/HomePage.jsx","src/pages/ProjectsPage.jsx","src/pages/KanbanPage.jsx","src/pages/CalendarPage.jsx","src/index.css"]
+
+---
+REQUEST:
+You are modifying a React codebase based on user instructions.
+
+User instruction: "Todos should have projects and due dates. We need three more pages (use React Router).
+* One to manage projects
+* One for Kanban view with drag and drop and 3 columns: New, Working, Done
+* One for Calendar view - which would show each TODO for their respective due date in the correct day slot
+Do not use any external libraries or packages."
+
+Current files:
+
+FILE: App.jsx
+================================================================================
+
+import React from 'react';
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
+import TodoApp from './components/TodoApp';
+
+function App() {
+    return (
+        <Router>
+            <ScrollToTop />
+            <Routes>
+                <Route path="/" element={<TodoApp />} />
+            </Routes>
+        </Router>
+    );
+}
+
+export default App;
+
+================================================================================
+
+
+FILE: main.jsx
+================================================================================
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from '@/App';
+import '@/index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <App />
+);
+
+================================================================================
+
+
+FILE: components/TodoApp.jsx
+================================================================================
+
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, ListTodo } from 'lucide-react';
+import TodoForm from '@/components/TodoForm';
+import TodoItem from '@/components/TodoItem';
+import { useToast } from '@/components/ui/use-toast';
+
+const TodoApp = () => {
+  const [todos, setTodos] = useState([]);
+  const { toast } = useToast();
+
+  // Load todos from localStorage on mount
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos');
+    if (savedTodos) {
+      try {
+        setTodos(JSON.parse(savedTodos));
+      } catch (error) {
+        console.error('Error loading todos:', error);
+      }
+    }
+  }, []);
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
+
+  const addTodo = (text) => {
+    const newTodo = {
+      id: Date.now(),
+      text,
+      completed: false,
+    };
+    setTodos([newTodo, ...todos]);
+    toast({
+      title: "Todo added!",
+      description: "Your new task has been added to the list.",
+    });
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const toggleComplete = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const editTodo = (id, newText) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, text: newText } : todo
+      )
+    );
+  };
+
+  const completedCount = todos.filter((todo) => todo.completed).length;
+  const activeCount = todos.length - completedCount;
+
+  return (
+    <>
+      <Helmet>
+        <title>Todo App - Manage Your Tasks</title>
+        <meta
+          name="description"
+          content="A beautiful and intuitive todo list application to help you organize and manage your daily tasks efficiently."
+        />
+      </Helmet>
+
+      <div
+        className="min-h-screen py-8 px-4 sm:px-6 lg:px-8"
+        style={{
+          background: `linear-gradient(135deg, #fee2e2 0%, #fecaca 25%, #fca5a5 50%, #f87171 75%, #ef4444 100%)`
+        }}
+      >
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8"
+          >
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <CheckCircle2 size={48} className="text-red-800" />
+              <h1 className="text-5xl font-bold text-red-900">Todo App</h1>
+            </div>
+            <p className="text-red-800 text-lg">Organize your tasks, achieve your goals</p>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white rounded-xl shadow-lg p-4 mb-6"
+          >
+            <div className="flex justify-around text-center">
+              <div>
+                <p className="text-3xl font-bold text-red-600">{todos.length}</p>
+                <p className="text-sm text-gray-600">Total Tasks</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-orange-600">{activeCount}</p>
+                <p className="text-sm text-gray-600">Active</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-green-600">{completedCount}</p>
+                <p className="text-sm text-gray-600">Completed</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Todo Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-xl shadow-lg p-6 mb-6"
+          >
+            <TodoForm onAddTodo={addTodo} />
+          </motion.div>
+
+          {/* Todo List */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="space-y-3"
+          >
+            <AnimatePresence mode="popLayout">
+              {todos.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-white rounded-xl shadow-lg p-12 text-center"
+                >
+                  <ListTodo size={64} className="mx-auto mb-4 text-red-300" />
+                  <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                    No todos yet!
+                  </h3>
+                  <p className="text-gray-600">
+                    Add your first task above to get started.
+                  </p>
+                </motion.div>
+              ) : (
+                todos.map((todo) => (
+                  <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={toggleComplete}
+                    onDelete={deleteTodo}
+                    onEdit={editTodo}
+                  />
+                ))
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default TodoApp;
+
+================================================================================
+
+
+FILE: components/TodoForm.jsx
+================================================================================
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+
+const TodoForm = ({ onAddTodo }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmedValue = inputValue.trim();
+    
+    if (trimmedValue) {
+      onAddTodo(trimmedValue);
+      setInputValue('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="What needs to be done?"
+          className="flex-1 px-4 py-3 bg-red-50 text-gray-900 placeholder-gray-400 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
+        />
+        <motion.button
+          type="submit"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+        >
+          <Plus size={20} />
+          <span className="hidden sm:inline">Add Todo</span>
+        </motion.button>
+      </div>
+    </form>
+  );
+};
+
+export default TodoForm;
+
+================================================================================
+
+
+FILE: components/TodoItem.jsx
+================================================================================
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Edit2, Trash2, Save } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+
+const TodoItem = ({ todo, onToggle, onDelete, onEdit }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+  const { toast } = useToast();
+
+  const handleEdit = () => {
+    const trimmedText = editText.trim();
+    if (trimmedText && trimmedText !== todo.text) {
+      onEdit(todo.id, trimmedText);
+      setIsEditing(false);
+      toast({
+        title: "Todo updated!",
+        description: "Your changes have been saved.",
+      });
+    } else if (!trimmedText) {
+      setEditText(todo.text);
+      setIsEditing(false);
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleDelete = () => {
+    onDelete(todo.id);
+    toast({
+      title: "Todo deleted",
+      description: "The todo has been removed from your list.",
+    });
+  };
+
+  const handleToggle = () => {
+    onToggle(todo.id);
+    toast({
+      title: todo.completed ? "Todo uncompleted" : "Todo completed!",
+      description: todo.completed ? "Keep up the good work!" : "Great job! ✨",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditText(todo.text);
+    setIsEditing(false);
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{ duration: 0.2 }}
+      className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-4 ${
+        todo.completed ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={handleToggle}
+          className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+            todo.completed
+              ? 'bg-green-500 border-green-500'
+              : 'border-red-400 hover:border-red-500'
+          }`}
+        >
+          <AnimatePresence>
+            {todo.completed && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Check size={14} className="text-white" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        {isEditing ? (
+          <input
+            type="text"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleEdit();
+              if (e.key === 'Escape') handleCancelEdit();
+            }}
+            autoFocus
+            className="flex-1 px-3 py-1.5 bg-red-50 text-gray-900 rounded border-2 border-red-300 focus:border-red-500 focus:outline-none transition-all duration-200"
+          />
+        ) : (
+          <span
+            className={`flex-1 text-gray-800 transition-all duration-200 ${
+              todo.completed ? 'line-through text-gray-500' : ''
+            }`}
+          >
+            {todo.text}
+          </span>
+        )}
+
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleEdit}
+                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
+              >
+                <Save size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleCancelEdit}
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+              >
+                <X size={18} />
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsEditing(true)}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+              >
+                <Edit2 size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleDelete}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+              >
+                <Trash2 size={18} />
+              </motion.button>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default TodoItem;
+
+================================================================================
+
+
+FILE: pages/HomePage.jsx
+================================================================================
+import { motion } from 'framer-motion';
+import HeroImage from '../components/HeroImage';
+import CallToAction from '../components/CallToAction';
+import WelcomeMessage from '../components/WelcomeMessage';
+
+const HomePage = () => {
+    return (
+        <div
+            className='min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden relative'
+            style={{
+                background: `radial-gradient(100% 100% at 50% 100%, var(--Gradients-Main-Color-4, #FF9875) 0%, var(--Gradients-Main-Color-3, #B452FF) 15%, var(--Gradients-Main-Color-2, #673DE6) 30%, var(--neutral--800, #1a1b1e) 80%)`
+            }}
+        >
+            <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className='flex flex-col items-center gap-4 w-full max-w-[448px]'
+            >
+                <HeroImage />
+                <div className='flex flex-col gap-1 w-full text-center'>
+                    <CallToAction />
+                    <WelcomeMessage />
+                </div>
+            </motion.div>
+        </div>
+    )
+}
+
+export default HomePage;
+================================================================================
+
+
+FILE: index.css
+================================================================================
+/*
+  TEMPLATE STYLES: These styles are used as a base template.
+  AI is allowed to modify these styles as needed.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    @apply bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 bg-slate-900 text-white;
+    font-family: 'DM Sans', sans-serif;
+}
+
+================================================================================
+
+
+Modify the files according to the instruction. 
+
+IMPORTANT:
+- Return the COMPLETE modified content for EACH file
+- Do NOT return partial files or just the changes
+- Maintain proper syntax (React/JavaScript/CSS)
+- Keep all existing code that isn't affected by the instruction
+- Ensure imports and exports are correct
+
+Return your response as a JSON object where keys are file paths and values are the complete new file contents:
+
+{
+  "src/App.jsx": "complete file content here...",
+  "src/styles.css": "complete file content here..."
+}
+
+Return ONLY the JSON object. No explanation or markdown formatting.
+
+
+RESPONSE:
+{
+  "App.jsx": "import React from 'react';
+import { Route, Routes, BrowserRouter as Router, Link } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
+import TodoApp from './components/TodoApp';
+import ProjectsPage from './pages/ProjectsPage';
+import KanbanPage from './pages/KanbanPage';
+import CalendarPage from './pages/CalendarPage';
+import HomePage from './pages/HomePage';
+
+function App() {
+    return (
+        <Router>
+            <ScrollToTop />
+            <div className=\"w-full bg-transparent\">
+                <nav className=\"bg-white/5 backdrop-blur-sm border-b border-white/5 p-3\">
+                    <div className=\"max-w-6xl mx-auto flex items-center justify-between gap-4\">
+                        <div className=\"flex items-center gap-4\">
+                            <Link to=\"/\" className=\"text-white font-semibold\">Home</Link>
+                            <Link to=\"/app\" className=\"text-white/80 hover:text-white\">Todo App</Link>
+                            <Link to=\"/projects\" className=\"text-white/80 hover:text-white\">Projects</Link>
+                            <Link to=\"/kanban\" className=\"text-white/80 hover:text-white\">Kanban</Link>
+                            <Link to=\"/calendar\" className=\"text-white/80 hover:text-white\">Calendar</Link>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <Routes>
+                <Route path=\"/\" element={<HomePage />} />
+                <Route path=\"/app\" element={<TodoApp />} />
+                <Route path=\"/projects\" element={<ProjectsPage />} />
+                <Route path=\"/kanban\" element={<KanbanPage />} />
+                <Route path=\"/calendar\" element={<CalendarPage />} />
+                <Route path=\"*\" element={<TodoApp />} />
+            </Routes>
+        </Router>
+    );
+}
+
+export default App;
+",
+  "components/TodoApp.jsx": "import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, ListTodo } from 'lucide-react';
+import TodoForm from '@/components/TodoForm';
+import TodoItem from '@/components/TodoItem';
+import { useToast } from '@/components/ui/use-toast';
+
+const TodoApp = () => {
+  const [todos, setTodos] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const { toast } = useToast();
+
+  // Load todos and projects from localStorage on mount
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos');
+    if (savedTodos) {
+      try {
+        setTodos(JSON.parse(savedTodos));
+      } catch (error) {
+        console.error('Error loading todos:', error);
+      }
+    }
+    const savedProjects = localStorage.getItem('projects');
+    if (savedProjects) {
+      try {
+        setProjects(JSON.parse(savedProjects));
+      } catch (error) {
+        console.error('Error loading projects:', error);
+      }
+    }
+  }, []);
+
+  // Save todos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
+
+  // Save projects to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  const addTodo = ({ text, projectId = null, dueDate = '' }) => {
+    const newTodo = {
+      id: Date.now(),
+      text,
+      completed: false,
+      projectId,
+      dueDate, // expected format: YYYY-MM-DD or ''
+      status: 'new', // new | working | done
+    };
+    setTodos([newTodo, ...todos]);
+    toast({
+      title: 'Todo added!',
+      description: 'Your new task has been added to the list.',
+    });
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const toggleComplete = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id
+          ? {
+              ...todo,
+              completed: !todo.completed,
+              status: !todo.completed ? 'done' : 'new',
+            }
+          : todo
+      )
+    );
+  };
+
+  const editTodo = (id, updates) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id
+          ? {
+              ...todo,
+              ...updates,
+              // keep consistency between status and completed
+              completed: updates.status ? updates.status === 'done' : typeof updates.completed === 'boolean' ? updates.completed : todo.completed,
+            }
+          : todo
+      )
+    );
+  };
+
+  const completedCount = todos.filter((todo) => todo.completed).length;
+  const activeCount = todos.length - completedCount;
+
+  // expose simple project management inside the Todo app
+  const addProject = (name) => {
+    const newProj = { id: Date.now(), name };
+    setProjects([newProj, ...projects]);
+    toast({ title: 'Project added', description: `Project \"${name}\" created.` });
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Todo App - Manage Your Tasks</title>
+        <meta
+          name=\"description\"
+          content=\"A beautiful and intuitive todo list application to help you organize and manage your daily tasks efficiently.\"
+        />
+      </Helmet>
+
+      <div
+        className=\"min-h-screen py-8 px-4 sm:px-6 lg:px-8\"
+        style={{
+          background: `linear-gradient(135deg, #fee2e2 0%, #fecaca 25%, #fca5a5 50%, #f87171 75%, #ef4444 100%)`,
+        }}
+      >
+        <div className=\"max-w-3xl mx-auto\">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className=\"text-center mb-8\"
+          >
+            <div className=\"flex items-center justify-center gap-3 mb-2\">
+              <CheckCircle2 size={48} className=\"text-red-800\" />
+              <h1 className=\"text-5xl font-bold text-red-900\">Todo App</h1>
+            </div>
+            <p className=\"text-red-800 text-lg\">Organize your tasks, achieve your goals</p>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className=\"bg-white rounded-xl shadow-lg p-4 mb-6\"
+          >
+            <div className=\"flex justify-around text-center\">
+              <div>
+                <p className=\"text-3xl font-bold text-red-600\">{todos.length}</p>
+                <p className=\"text-sm text-gray-600\">Total Tasks</p>
+              </div>
+              <div>
+                <p className=\"text-3xl font-bold text-orange-600\">{activeCount}</p>
+                <p className=\"text-sm text-gray-600\">Active</p>
+              </div>
+              <div>
+                <p className=\"text-3xl font-bold text-green-600\">{completedCount}</p>
+                <p className=\"text-sm text-gray-600\">Completed</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Todo Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className=\"bg-white rounded-xl shadow-lg p-6 mb-6\"
+          >
+            <TodoForm onAddTodo={addTodo} projects={projects} onAddProject={addProject} />
+          </motion.div>
+
+          {/* Todo List */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className=\"space-y-3\"
+          >
+            <AnimatePresence mode=\"popLayout\">
+              {todos.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className=\"bg-white rounded-xl shadow-lg p-12 text-center\"
+                >
+                  <ListTodo size={64} className=\"mx-auto mb-4 text-red-300\" />
+                  <h3 className=\"text-2xl font-semibold text-gray-800 mb-2\">No todos yet!</h3>
+                  <p className=\"text-gray-600\">Add your first task above to get started.</p>
+                </motion.div>
+              ) : (
+                todos.map((todo) => (
+                  <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    projects={projects}
+                    onToggle={toggleComplete}
+                    onDelete={deleteTodo}
+                    onEdit={editTodo}
+                  />
+                ))
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default TodoApp;
+",
+  "components/TodoForm.jsx": "import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+
+const TodoForm = ({ onAddTodo, projects = [], onAddProject }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [newProjectName, setNewProjectName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmedValue = inputValue.trim();
+
+    if (trimmedValue) {
+      onAddTodo({ text: trimmedValue, projectId: projectId || null, dueDate });
+      setInputValue('');
+      setDueDate('');
+      setProjectId('');
+    }
+  };
+
+  const handleAddProject = (e) => {
+    e.preventDefault();
+    const name = newProjectName.trim();
+    if (!name) return;
+    if (onAddProject) onAddProject(name);
+    setNewProjectName('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className=\"w-full\">
+      <div className=\"flex flex-col gap-3\">
+        <div className=\"flex gap-2\">
+          <input
+            type=\"text\"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder=\"What needs to be done?\"
+            className=\"flex-1 px-4 py-3 bg-red-50 text-gray-900 placeholder-gray-400 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200\"
+          />
+          <motion.button
+            type=\"submit\"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className=\"px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2\"
+          >
+            <Plus size={20} />
+            <span className=\"hidden sm:inline\">Add Todo</span>
+          </motion.button>
+        </div>
+
+        <div className=\"flex gap-2 items-center\">
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className=\"px-3 py-2 bg-red-50 text-gray-900 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none transition-all duration-200\"
+          >
+            <option value=\"\">No project</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+
+          <input
+            type=\"date\"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className=\"px-3 py-2 bg-red-50 text-gray-900 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none transition-all duration-200\"
+          />
+        </div>
+
+        <div className=\"flex gap-2 items-center\">
+          <input
+            type=\"text\"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder=\"New project name\"
+            className=\"flex-1 px-3 py-2 bg-red-50 text-gray-900 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none transition-all duration-200\"
+          />
+          <button
+            onClick={handleAddProject}
+            className=\"px-4 py-2 bg-white text-red-600 rounded-lg border border-red-200 hover:bg-red-50 transition-all duration-200\"
+            type=\"button\"
+          >
+            Add Project
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+export default TodoForm;
+",
+  "components/TodoItem.jsx": "import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Edit2, Trash2, Save } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+
+const TodoItem = ({ todo, onToggle, onDelete, onEdit, projects = [] }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+  const [editProject, setEditProject] = useState(todo.projectId || '');
+  const [editDueDate, setEditDueDate] = useState(todo.dueDate || '');
+  const { toast } = useToast();
+
+  const handleEdit = () => {
+    const trimmedText = editText.trim();
+    if (trimmedText && trimmedText !== todo.text) {
+      onEdit(todo.id, { text: trimmedText, projectId: editProject || null, dueDate: editDueDate });
+      setIsEditing(false);
+      toast({
+        title: 'Todo updated!',
+        description: 'Your changes have been saved.',
+      });
+    } else if (!trimmedText) {
+      setEditText(todo.text);
+      setIsEditing(false);
+    } else {
+      // Might still have changed project or dueDate
+      onEdit(todo.id, { projectId: editProject || null, dueDate: editDueDate });
+      setIsEditing(false);
+    }
+  };
+
+  const handleDelete = () => {
+    onDelete(todo.id);
+    toast({
+      title: 'Todo deleted',
+      description: 'The todo has been removed from your list.',
+    });
+  };
+
+  const handleToggle = () => {
+    onToggle(todo.id);
+    toast({
+      title: todo.completed ? 'Todo uncompleted' : 'Todo completed!',
+      description: todo.completed ? 'Keep up the good work!' : 'Great job! ✨',
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditText(todo.text);
+    setEditProject(todo.projectId || '');
+    setEditDueDate(todo.dueDate || '');
+    setIsEditing(false);
+  };
+
+  const projectName = projects.find((p) => p.id === todo.projectId)?.name || '';
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{ duration: 0.2 }}
+      className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-4 ${
+        todo.completed ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500'
+      }`}
+    >
+      <div className=\"flex items-center gap-3\">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={handleToggle}
+          className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+            todo.completed
+              ? 'bg-green-500 border-green-500'
+              : 'border-red-400 hover:border-red-500'
+          }`}
+        >
+          <AnimatePresence>
+            {todo.completed && (
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                <Check size={14} className=\"text-white\" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        {isEditing ? (
+          <div className=\"flex-1 flex flex-col gap-2\">
+            <input
+              type=\"text\"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleEdit();
+                if (e.key === 'Escape') handleCancelEdit();
+              }}
+              autoFocus
+              className=\"flex-1 px-3 py-1.5 bg-red-50 text-gray-900 rounded border-2 border-red-300 focus:border-red-500 focus:outline-none transition-all duration-200\"
+            />
+            <div className=\"flex gap-2 items-center\">
+              <select
+                value={editProject}
+                onChange={(e) => setEditProject(e.target.value)}
+                className=\"px-3 py-2 bg-red-50 text-gray-900 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none transition-all duration-200\"
+              >
+                <option value=\"\">No project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <input
+                type=\"date\"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                className=\"px-3 py-2 bg-red-50 text-gray-900 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none transition-all duration-200\"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className=\"flex-1\">
+            <div className={`flex items-center justify-between gap-2 ${todo.completed ? 'line-through text-gray-500' : ''}`}>
+              <span className=\"text-gray-800\">{todo.text}</span>
+              <div className=\"text-sm text-gray-500\">{todo.dueDate ? todo.dueDate : ''}</div>
+            </div>
+            {projectName && <div className=\"text-xs text-gray-400 mt-1\">Project: {projectName}</div>}
+          </div>
+        )}
+
+        <div className=\"flex gap-2\">
+          {isEditing ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleEdit}
+                className=\"p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200\"
+              >
+                <Save size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleCancelEdit}
+                className=\"p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200\"
+              >
+                <X size={18} />
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsEditing(true)}
+                className=\"p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200\"
+              >
+                <Edit2 size={18} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleDelete}
+                className=\"p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200\"
+              >
+                <Trash2 size={18} />
+              </motion.button>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default TodoItem;
+",
+  "pages/ProjectsPage.jsx": "import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+
+const ProjectsPage = () => {
+  const [projects, setProjects] = useState([]);
+  const [name, setName] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('projects');
+    if (saved) {
+      try {
+        setProjects(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  const addProject = (e) => {
+    e.preventDefault();
+    const v = name.trim();
+    if (!v) return;
+    const newP = { id: Date.now(), name: v };
+    setProjects([newP, ...projects]);
+    setName('');
+  };
+
+  const removeProject = (id) => {
+    // also remove project associations from todos
+    setProjects(projects.filter((p) => p.id !== id));
+    const savedTodos = localStorage.getItem('todos');
+    if (savedTodos) {
+      try {
+        const todos = JSON.parse(savedTodos).map((t) => (t.projectId === id ? { ...t, projectId: null } : t));
+        localStorage.setItem('todos', JSON.stringify(todos));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const startEdit = (p) => {
+    setEditingId(p.id);
+    setEditingName(p.name);
+  };
+
+  const saveEdit = (e) => {
+    e.preventDefault();
+    setProjects(projects.map((p) => (p.id === editingId ? { ...p, name: editingName } : p)));
+    setEditingId(null);
+    setEditingName('');
+  };
+
+  return (
+    <div className=\"min-h-screen p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white\">
+      <Helmet>
+        <title>Projects - Manage Projects</title>
+      </Helmet>
+      <div className=\"max-w-3xl mx-auto bg-white/5 p-6 rounded-md\">
+        <h2 className=\"text-2xl font-semibold mb-4\">Manage Projects</h2>
+        <form onSubmit={addProject} className=\"flex gap-2 mb-4\">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder=\"New project name\"
+            className=\"flex-1 px-3 py-2 rounded border border-white/10 bg-transparent\"
+          />
+          <button className=\"px-4 py-2 bg-white text-indigo-700 rounded\">Add</button>
+        </form>
+
+        <div className=\"space-y-3\">
+          {projects.length === 0 && <div className=\"text-sm text-white/60\">No projects yet.</div>}
+          {projects.map((p) => (
+            <div key={p.id} className=\"flex items-center justify-between bg-white/3 p-3 rounded\">
+              {editingId === p.id ? (
+                <form onSubmit={saveEdit} className=\"flex-1 flex gap-2 items-center\">
+                  <input value={editingName} onChange={(e) => setEditingName(e.target.value)} className=\"flex-1 px-2 py-1 rounded bg-white/5\" />
+                  <button className=\"px-3 py-1 bg-green-600 rounded\">Save</button>
+                  <button type=\"button\" onClick={() => setEditingId(null)} className=\"px-3 py-1 bg-gray-600 rounded\">Cancel</button>
+                </form>
+              ) : (
+                <>
+                  <div className=\"flex-1\">
+                    <div className=\"font-medium\">{p.name}</div>
+                    <div className=\"text-xs text-white/60\">ID: {p.id}</div>
+                  </div>
+                  <div className=\"flex gap-2\">
+                    <button onClick={() => startEdit(p)} className=\"px-3 py-1 bg-yellow-500 rounded\">Edit</button>
+                    <button onClick={() => removeProject(p.id)} className=\"px-3 py-1 bg-red-600 rounded\">Delete</button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectsPage;
+",
+  "pages/KanbanPage.jsx": "import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet';
+
+const KanbanPage = () => {
+  const [todos, setTodos] = useState([]);
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('todos');
+    if (saved) {
+      try {
+        setTodos(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const savedP = localStorage.getItem('projects');
+    if (savedP) {
+      try {
+        setProjects(JSON.parse(savedP));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
+
+  const onDragStart = (e, id) => {
+    e.dataTransfer.setData('text/plain', String(id));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const onDrop = (e, status) => {
+    e.preventDefault();
+    const id = Number(e.dataTransfer.getData('text/plain'));
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, status, completed: status === 'done' } : t))
+    );
+  };
+
+  const onDragOver = (e) => e.preventDefault();
+
+  const columns = [
+    { key: 'new', title: 'New' },
+    { key: 'working', title: 'Working' },
+    { key: 'done', title: 'Done' },
+  ];
+
+  const columnItems = (key) => todos.filter((t) => (t.status || 'new') === key);
+
+  const updateStatus = (id, status) => {
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, status, completed: status === 'done' } : t)));
+  };
+
+  return (
+    <div className=\"min-h-screen p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white\">
+      <Helmet>
+        <title>Kanban - Board</title>
+      </Helmet>
+      <div className=\"max-w-6xl mx-auto\">
+        <h2 className=\"text-2xl font-semibold mb-4\">Kanban Board</h2>
+        <div className=\"grid grid-cols-1 md:grid-cols-3 gap-4\">
+          {columns.map((col) => (
+            <div
+              key={col.key}
+              onDragOver={onDragOver}
+              onDrop={(e) => onDrop(e, col.key)}
+              className=\"bg-white/5 rounded p-4 min-h-[300px] flex flex-col\"
+            >
+              <div className=\"font-semibold mb-3\">{col.title} ({columnItems(col.key).length})</div>
+              <div className=\"flex-1 space-y-3\">
+                {columnItems(col.key).map((t) => (
+                  <div
+                    key={t.id}
+                    draggable
+                    onDragStart={(e) => onDragStart(e, t.id)}
+                    className=\"bg-white rounded p-3 text-gray-800 flex items-start justify-between gap-2 cursor-grab\"
+                  >
+                    <div className=\"flex-1\">
+                      <div className={`font-medium ${t.completed ? 'line-through text-gray-400' : ''}`}>{t.text}</div>
+                      <div className=\"text-xs text-gray-500 mt-1\">{t.dueDate ? `Due: ${t.dueDate}` : ''}</div>
+                      <div className=\"text-xs text-gray-400 mt-1\">Project: {projects.find((p) => p.id === t.projectId)?.name || '—'}</div>
+                    </div>
+                    <div className=\"flex flex-col gap-2\">
+                      <button
+                        onClick={() => updateStatus(t.id, 'new')}
+                        className=\"px-2 py-1 text-xs bg-indigo-500 text-white rounded\"
+                      >New</button>
+                      <button
+                        onClick={() => updateStatus(t.id, 'working')}
+                        className=\"px-2 py-1 text-xs bg-yellow-400 text-black rounded\"
+                      >Working</button>
+                      <button
+                        onClick={() => updateStatus(t.id, 'done')}
+                        className=\"px-2 py-1 text-xs bg-green-500 text-white rounded\"
+                      >Done</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default KanbanPage;
+",
+  "pages/CalendarPage.jsx": "import React, { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet';
+
+const formatDateKey = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const CalendarPage = () => {
+  const [todos, setTodos] = useState([]);
+  const [current, setCurrent] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('todos');
+    if (saved) {
+      try {
+        setTodos(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const monthDays = useMemo(() => {
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDay = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const items = [];
+    // previous month's tail slots
+    for (let i = 0; i < startDay; i++) items.push(null);
+    for (let d = 1; d <= daysInMonth; d++) items.push(new Date(year, month, d));
+    // fill to complete weeks
+    while (items.length % 7 !== 0) items.push(null);
+    return items;
+  }, [current]);
+
+  const nextMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() + 1, 1));
+  const prevMonth = () => setCurrent(new Date(current.getFullYear(), current.getMonth() - 1, 1));
+
+  const todosByDate = useMemo(() => {
+    const map = {};
+    todos.forEach((t) => {
+      if (t.dueDate) {
+        if (!map[t.dueDate]) map[t.dueDate] = [];
+        map[t.dueDate].push(t);
+      }
+    });
+    return map;
+  }, [todos]);
+
+  return (
+    <div className=\"min-h-screen p-6 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white\">
+      <Helmet>
+        <title>Calendar - Todos</title>
+      </Helmet>
+      <div className=\"max-w-5xl mx-auto bg-white/5 p-6 rounded\">
+        <div className=\"flex items-center justify-between mb-4\">
+          <h2 className=\"text-2xl font-semibold\">Calendar</h2>
+          <div className=\"flex items-center gap-2\">
+            <button onClick={prevMonth} className=\"px-3 py-1 bg-white/10 rounded\">Prev</button>
+            <div>{current.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</div>
+            <button onClick={nextMonth} className=\"px-3 py-1 bg-white/10 rounded\">Next</button>
+          </div>
+        </div>
+
+        <div className=\"grid grid-cols-7 gap-1 text-sm\">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+            <div key={d} className=\"text-center font-medium py-2\">{d}</div>
+          ))}
+
+          {monthDays.map((dt, idx) => {
+            if (!dt) return <div key={idx} className=\"min-h-[80px] bg-white/3 rounded p-2\"></div>;
+            const key = formatDateKey(dt);
+            const items = todosByDate[key] || [];
+            return (
+              <div key={key} className=\"min-h-[100px] bg-white/3 rounded p-2 flex flex-col\">
+                <div className=\"text-xs font-semibold mb-1\">{dt.getDate()}</div>
+                <div className=\"flex-1 space-y-1 overflow-auto\">
+                  {items.length === 0 && <div className=\"text-[11px] text-white/60\">No todos</div>}
+                  {items.map((t) => (
+                    <div key={t.id} className={`p-1 rounded text-[12px] ${t.completed ? 'bg-green-600/70 text-white line-through' : 'bg-white text-gray-800'}`}>
+                      <div className=\"font-medium\">{t.text}</div>
+                      <div className=\"text-xs\">{t.status ? t.status : 'new'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CalendarPage;
+"
+}

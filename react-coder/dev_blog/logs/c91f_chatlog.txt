@@ -1,0 +1,569 @@
+
+---
+REQUEST:
+You are analyzing a Vite/React/Tailwind CSS codebase to determine which files need to be modified.
+
+Project Structure:
+            Total files: 14
+            Files by type: {'css': 1, 'jsx': 11, 'js': 2}
+
+            File Tree:
+            ├── src/
+  ├── App.jsx (0.4KB) - Functions: App
+  ├── components/
+    ├── CallToAction.jsx (0.4KB) - Functions: CallToAction
+    ├── HeroImage.jsx (2.1KB) - Functions: HeroImage
+    ├── QRCodeGenerator.jsx (8.0KB) - Functions: QRCodeGenerator
+    ├── ScrollToTop.jsx (0.3KB) - Functions: ScrollToTop
+    ├── WelcomeMessage.jsx (0.4KB) - Functions: WelcomeMessage
+    ├── ui/
+      ├── button.jsx (1.5KB) - Functions: Button, Comp
+      ├── toast.jsx (3.7KB) - Functions: Toast, ToastAction, ToastClose, ToastDescription, ToastProvider
+      ├── toaster.jsx (0.7KB) - Functions: Toaster
+      ├── use-toast.js (2.0KB)
+  ├── index.css (0.3KB)
+  ├── lib/
+    ├── utils.js (0.1KB)
+  ├── main.jsx (0.2KB)
+  ├── pages/
+    ├── HomePage.jsx (1.2KB) - Functions: HomePage
+            
+
+User instruction: "Add a Button below the bar code to directly copy the QR Code image into the clipboard"
+
+Analyze the instruction and file structure. Identify which files need to be modified to fulfill this instruction.
+
+Guidelines:
+- Be selective - only include files that will actually change
+- Consider component hierarchy and imports
+- For styling changes, include relevant CSS files
+- For component changes, include the component file and possibly parent files
+
+Return ONLY a JSON array of file paths, like: ["src/App.jsx", "src/styles.css"]
+No explanation, just the JSON array.
+
+
+RESPONSE:
+["src/components/QRCodeGenerator.jsx"]
+
+---
+REQUEST:
+You are modifying a React codebase based on user instructions.
+
+User instruction: "Add a Button below the bar code to directly copy the QR Code image into the clipboard"
+
+Current files:
+
+FILE: components/QRCodeGenerator.jsx
+================================================================================
+
+import React, { useState, useRef } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { motion } from 'framer-motion';
+import { Download, Link as LinkIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { Helmet } from 'react-helmet';
+
+const QRCodeGenerator = () => {
+  // Update default foreground color to green and background color to red
+  const [url, setUrl] = useState('');
+  const [fgColor, setFgColor] = useState('#00FF00'); // Changed to green
+  const [bgColor, setBgColor] = useState('#FF0000'); // Changed to red
+  const [error, setError] = useState('');
+  const qrContainerRef = useRef(null);
+  const { toast } = useToast();
+
+  const validateUrl = (value) => {
+    if (!value) return true; // Empty is OK, we'll show default
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setUrl(value);
+    
+    if (value && !validateUrl(value)) {
+      setError('Please enter a valid URL (e.g., https://example.com)');
+    } else {
+      setError('');
+    }
+  };
+
+  const handleDownload = () => {
+    const canvas = qrContainerRef.current?.querySelector('canvas');
+    if (canvas) {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const downloadUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = 'qrcode.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(downloadUrl);
+          
+          toast({
+            title: "Success!",
+            description: "QR code downloaded successfully.",
+          });
+        }
+      });
+    }
+  };
+
+  const displayUrl = url || 'https://example.com';
+  const isValidUrl = !error && url;
+
+  return (
+    <>
+      <Helmet>
+        <title>QR Code Generator - Create Custom QR Codes</title>
+        <meta name="description" content="Generate custom QR codes with personalized colors. Free online QR code generator for URLs, websites, and links." />
+      </Helmet>
+      
+      <div
+        className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative"
+        style={{
+          background: `radial-gradient(100% 100% at 50% 100%, var(--Gradients-Main-Color-4, #FF9875) 0%, var(--Gradients-Main-Color-3, #B452FF) 15%, var(--Gradients-Main-Color-2, #673DE6) 30%, var(--neutral--800, #1a1b1e) 80%)`
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="w-full max-w-2xl"
+        >
+          <div className="bg-white rounded-3xl shadow-2xl p-8 space-y-8">
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <motion.h1 
+                className="text-4xl font-bold text-gray-900"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                QR Code Generator
+              </motion.h1>
+              <p className="text-gray-600">Create custom QR codes with your own colors</p>
+            </div>
+
+            {/* URL Input */}
+            <div className="space-y-2">
+              <label htmlFor="url-input" className="block text-sm font-medium text-gray-700">
+                Enter URL
+              </label>
+              <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="url-input"
+                  type="text"
+                  value={url}
+                  onChange={handleUrlChange}
+                  placeholder="https://example.com"
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder:text-gray-400"
+                />
+              </div>
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-red-600"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </div>
+
+            {/* Color Pickers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="fg-color" className="block text-sm font-medium text-gray-700">
+                  Foreground Color (Dark)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    id="fg-color"
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="h-12 w-16 rounded-lg cursor-pointer border-2 border-gray-300 transition-transform hover:scale-105"
+                  />
+                  <input
+                    type="text"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="bg-color" className="block text-sm font-medium text-gray-700">
+                  Background Color (Light)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    id="bg-color"
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-12 w-16 rounded-lg cursor-pointer border-2 border-gray-300 transition-transform hover:scale-105"
+                  />
+                  <input
+                    type="text"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* QR Code Preview */}
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-sm font-medium text-gray-700">Preview</p>
+              <motion.div
+                ref={qrContainerRef}
+                className="p-6 bg-gray-50 rounded-2xl shadow-inner"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                key={`${displayUrl}-${fgColor}-${bgColor}`}
+              >
+                <QRCodeCanvas
+                  value={displayUrl}
+                  size={256}
+                  fgColor={fgColor}
+                  bgColor={bgColor}
+                  level="H"
+                  className="rounded-lg"
+                />
+              </motion.div>
+              <p className="text-xs text-gray-500 text-center max-w-md">
+                {url ? displayUrl : 'Enter a URL above to generate your QR code'}
+              </p>
+            </div>
+
+            {/* Download Button */}
+            <div className="pt-4">
+              <Button
+                onClick={handleDownload}
+                disabled={!!error && !!url}
+                className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download QR Code
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+};
+
+export default QRCodeGenerator;
+
+================================================================================
+
+
+Modify the files according to the instruction. 
+
+IMPORTANT:
+- Return the COMPLETE modified content for EACH file
+- Do NOT return partial files or just the changes
+- Maintain proper syntax (React/JavaScript/CSS)
+- Keep all existing code that isn't affected by the instruction
+- Ensure imports and exports are correct
+
+Return your response as a JSON object where keys are file paths and values are the complete new file contents:
+
+{
+  "src/App.jsx": "complete file content here...",
+  "src/styles.css": "complete file content here..."
+}
+
+Return ONLY the JSON object. No explanation or markdown formatting.
+
+
+RESPONSE:
+{
+  "components/QRCodeGenerator.jsx": "import React, { useState, useRef } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { motion } from 'framer-motion';
+import { Download, Link as LinkIcon, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { Helmet } from 'react-helmet';
+
+const QRCodeGenerator = () => {
+  // Update default foreground color to green and background color to red
+  const [url, setUrl] = useState('');
+  const [fgColor, setFgColor] = useState('#00FF00'); // Changed to green
+  const [bgColor, setBgColor] = useState('#FF0000'); // Changed to red
+  const [error, setError] = useState('');
+  const qrContainerRef = useRef(null);
+  const { toast } = useToast();
+
+  const validateUrl = (value) => {
+    if (!value) return true; // Empty is OK, we'll show default
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setUrl(value);
+    
+    if (value && !validateUrl(value)) {
+      setError('Please enter a valid URL (e.g., https://example.com)');
+    } else {
+      setError('');
+    }
+  };
+
+  const handleDownload = () => {
+    const canvas = qrContainerRef.current?.querySelector('canvas');
+    if (canvas) {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const downloadUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = 'qrcode.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(downloadUrl);
+          
+          toast({
+            title: \"Success!\",
+            description: \"QR code downloaded successfully.\",
+          });
+        }
+      });
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    const canvas = qrContainerRef.current?.querySelector('canvas');
+    if (!canvas) {
+      toast({
+        title: 'Error',
+        description: 'No QR code found to copy.',
+      });
+      return;
+    }
+
+    // Convert canvas to blob and write to clipboard as an image
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        toast({
+          title: 'Error',
+          description: 'Failed to convert QR code to image.',
+        });
+        return;
+      }
+
+      if (navigator.clipboard && typeof window.ClipboardItem !== 'undefined') {
+        try {
+          const clipboardItem = new window.ClipboardItem({ 'image/png': blob });
+          await navigator.clipboard.write([clipboardItem]);
+          toast({
+            title: 'Copied!',
+            description: 'QR code image copied to clipboard.',
+          });
+        } catch (err) {
+          console.error('Clipboard write failed', err);
+          toast({
+            title: 'Error',
+            description: 'Unable to copy image to clipboard. Try downloading instead.',
+          });
+        }
+      } else {
+        // Fallback: inform the user that copying images isn't supported
+        toast({
+          title: 'Not supported',
+          description: 'Your browser does not support copying images to the clipboard. Please download the QR code instead.',
+        });
+      }
+    });
+  };
+
+  const displayUrl = url || 'https://example.com';
+  const isValidUrl = !error && url;
+
+  return (
+    <>
+      <Helmet>
+        <title>QR Code Generator - Create Custom QR Codes</title>
+        <meta name=\"description\" content=\"Generate custom QR codes with personalized colors. Free online QR code generator for URLs, websites, and links.\" />
+      </Helmet>
+      
+      <div
+        className=\"min-h-screen flex items-center justify-center p-4 overflow-hidden relative\"
+        style={{
+          background: `radial-gradient(100% 100% at 50% 100%, var(--Gradients-Main-Color-4, #FF9875) 0%, var(--Gradients-Main-Color-3, #B452FF) 15%, var(--Gradients-Main-Color-2, #673DE6) 30%, var(--neutral--800, #1a1b1e) 80%)`
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className=\"w-full max-w-2xl\"
+        >
+          <div className=\"bg-white rounded-3xl shadow-2xl p-8 space-y-8\">
+            {/* Header */}
+            <div className=\"text-center space-y-2\">
+              <motion.h1 
+                className=\"text-4xl font-bold text-gray-900\"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                QR Code Generator
+              </motion.h1>
+              <p className=\"text-gray-600\">Create custom QR codes with your own colors</p>
+            </div>
+
+            {/* URL Input */}
+            <div className=\"space-y-2\">
+              <label htmlFor=\"url-input\" className=\"block text-sm font-medium text-gray-700\">
+                Enter URL
+              </label>
+              <div className=\"relative\">
+                <LinkIcon className=\"absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400\" />
+                <input
+                  id=\"url-input\"
+                  type=\"text\"
+                  value={url}
+                  onChange={handleUrlChange}
+                  placeholder=\"https://example.com\"
+                  className=\"w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder:text-gray-400\"
+                />
+              </div>
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className=\"text-sm text-red-600\"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </div>
+
+            {/* Color Pickers */}
+            <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
+              <div className=\"space-y-2\">
+                <label htmlFor=\"fg-color\" className=\"block text-sm font-medium text-gray-700\">
+                  Foreground Color (Dark)
+                </label>
+                <div className=\"flex items-center gap-3\">
+                  <input
+                    id=\"fg-color\"
+                    type=\"color\"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className=\"h-12 w-16 rounded-lg cursor-pointer border-2 border-gray-300 transition-transform hover:scale-105\"
+                  />
+                  <input
+                    type=\"text\"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className=\"flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm\"
+                  />
+                </div>
+              </div>
+
+              <div className=\"space-y-2\">
+                <label htmlFor=\"bg-color\" className=\"block text-sm font-medium text-gray-700\">
+                  Background Color (Light)
+                </label>
+                <div className=\"flex items-center gap-3\">
+                  <input
+                    id=\"bg-color\"
+                    type=\"color\"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className=\"h-12 w-16 rounded-lg cursor-pointer border-2 border-gray-300 transition-transform hover:scale-105\"
+                  />
+                  <input
+                    type=\"text\"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className=\"flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm\"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* QR Code Preview */}
+            <div className=\"flex flex-col items-center space-y-4\">
+              <p className=\"text-sm font-medium text-gray-700\">Preview</p>
+              <motion.div
+                ref={qrContainerRef}
+                className=\"p-6 bg-gray-50 rounded-2xl shadow-inner\"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                key={`${displayUrl}-${fgColor}-${bgColor}`}
+              >
+                <QRCodeCanvas
+                  value={displayUrl}
+                  size={256}
+                  fgColor={fgColor}
+                  bgColor={bgColor}
+                  level=\"H\"
+                  className=\"rounded-lg\"
+                />
+              </motion.div>
+              <p className=\"text-xs text-gray-500 text-center max-w-md\">
+                {url ? displayUrl : 'Enter a URL above to generate your QR code'}
+              </p>
+
+              {/* Copy Button placed below the barcode */}
+              <div className=\"w-full max-w-xs\">
+                <Button
+                  onClick={handleCopyToClipboard}
+                  disabled={!!error && !!url}
+                  className=\"w-full py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white rounded-xl shadow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed\"
+                >
+                  <Copy className=\"w-4 h-4 mr-2\" />
+                  Copy QR Code
+                </Button>
+              </div>
+            </div>
+
+            {/* Download Button */}
+            <div className=\"pt-4\">
+              <Button
+                onClick={handleDownload}
+                disabled={!!error && !!url}
+                className=\"w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed\"
+              >
+                <Download className=\"w-5 h-5 mr-2\" />
+                Download QR Code
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+};
+
+export default QRCodeGenerator;
+"
+}

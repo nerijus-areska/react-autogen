@@ -1,0 +1,641 @@
+
+---
+REQUEST:
+You are analyzing a Vite/React/Tailwind CSS codebase to determine which files need to be modified.
+
+Project Structure:
+            Total files: 13
+            Files by type: {'css': 1, 'jsx': 10, 'js': 2}
+
+            File Tree:
+            ├── src/
+  ├── App.jsx (0.4KB) - Functions: App
+  ├── components/
+    ├── CallToAction.jsx (0.4KB) - Functions: CallToAction
+    ├── HeroImage.jsx (2.1KB) - Functions: HeroImage
+    ├── ScrollToTop.jsx (0.3KB) - Functions: ScrollToTop
+    ├── WelcomeMessage.jsx (0.4KB) - Functions: WelcomeMessage
+    ├── ui/
+      ├── button.jsx (1.5KB) - Functions: Button, Comp
+      ├── toast.jsx (3.7KB) - Functions: Toast, ToastAction, ToastClose, ToastDescription, ToastProvider
+      ├── toaster.jsx (0.7KB) - Functions: Toaster
+      ├── use-toast.js (2.0KB)
+  ├── index.css (0.3KB)
+  ├── lib/
+    ├── utils.js (0.1KB)
+  ├── main.jsx (0.2KB)
+  ├── pages/
+    ├── HomePage.jsx (10.3KB) - Functions: HomePage
+            
+
+User instruction: "I moved my shop, current address now is Gedimino pr. 11"
+
+Analyze the instruction and file structure. Identify which files need to be modified to fulfill this instruction.
+
+Guidelines:
+- Be selective - only include files that will actually change
+- Consider component hierarchy and imports
+- For styling changes, include relevant CSS files
+- For component changes, include the component file and possibly parent files
+
+Return ONLY a JSON array of file paths, like: ["src/App.jsx", "src/styles.css"]
+No explanation, just the JSON array.
+
+
+RESPONSE:
+["src/pages/HomePage.jsx","src/components/WelcomeMessage.jsx","src/components/CallToAction.jsx"]
+
+---
+REQUEST:
+You are modifying a React codebase based on user instructions.
+
+User instruction: "I moved my shop, current address now is Gedimino pr. 11"
+
+Current files:
+
+FILE: pages/HomePage.jsx
+================================================================================
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { MapPin, Phone } from 'lucide-react';
+import { Helmet } from 'react-helmet';
+
+const HomePage = () => {
+  const galleryImages = [
+    { url: 'https://images.unsplash.com/photo-1563262924-641a8b3d397f', alt: 'Colorful candy assortment' },
+    { url: 'https://images.unsplash.com/photo-1672395974906-692dea813bea', alt: 'Premium sweets display' },
+    { url: 'https://images.unsplash.com/photo-1680518873896-13b23212bd4f', alt: 'Artisanal confections' },
+    { url: 'https://images.unsplash.com/photo-1601493701002-3223e7e1ebaf', alt: 'Sweet treats close-up' }
+  ];
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+  };
+
+  const scaleIn = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Vilnius Candy Pop - Premium Sweets & Confections in Vilnius</title>
+        <meta name="description" content="Vilnius Candy Pop offers exquisite premium candies and sweets in Vilnius. Visit us at Verkių g. 31B or call (0-666) 21248 for the finest confections." />
+      </Helmet>
+
+      {/* Hero Section */}
+      <section className="min-h-screen relative flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1696930150242-0d82f96630e9)' }}
+        />
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 via-violet-800/70 to-pink-700/60" />
+        
+        {/* Layered Shadow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        
+        {/* Content */}
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+          <motion.h1
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 drop-shadow-2xl"
+            style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+          >
+            Vilnius Candy Pop
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+            className="text-xl md:text-2xl lg:text-3xl text-white/95 font-light tracking-wide drop-shadow-lg"
+          >
+            Exquisite Sweets & Premium Confections
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
+            className="mt-10"
+          >
+            <div className="inline-block px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
+              <p className="text-white text-lg font-medium">Where Flavor Meets Sweetness</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Our Sweet Collection</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover our stunning selection of artisanal candies and treats
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={index}
+                variants={scaleIn}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 aspect-square"
+              >
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Info Section */}
+      <section className="py-16 px-4 relative overflow-hidden">
+        {/* Background with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-violet-700 to-pink-600" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-12">Visit Us</h2>
+            
+            <div className="space-y-8">
+              {/* Business Name */}
+              <motion.div
+                variants={fadeInUp}
+                className="text-center"
+              >
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-2">Vilnius Candy Pop</h3>
+                <div className="w-24 h-1 bg-gradient-to-r from-pink-400 to-purple-400 mx-auto rounded-full" />
+              </motion.div>
+
+              {/* Address */}
+              <motion.div
+                variants={fadeInUp}
+                className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-white/70 font-medium mb-1">Address</p>
+                  <p className="text-xl text-white font-semibold">Verkių g. 31B</p>
+                  <p className="text-lg text-white/90">Vilnius, Lithuania</p>
+                </div>
+              </motion.div>
+
+              {/* Phone */}
+              <motion.div
+                variants={fadeInUp}
+                className="flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-white/70 font-medium mb-1">Phone</p>
+                  <a 
+                    href="tel:066621248" 
+                    className="text-2xl text-white font-semibold hover:text-pink-200 transition-colors duration-200"
+                  >
+                    (0-666) 21248
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-gray-50 to-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Find Us</h2>
+            <p className="text-lg text-gray-600">We're conveniently located in the heart of Vilnius</p>
+          </motion.div>
+
+          <motion.div
+            variants={scaleIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white"
+          >
+            <iframe
+              src="https://www.openstreetmap.org/export/embed.html?bbox=25.2846%2C54.6991%2C25.2946%2C54.7091&layer=mapnik&marker=54.7041%2C25.2896"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              loading="lazy"
+              title="Vilnius Candy Pop Location Map"
+              className="w-full"
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            className="text-center mt-6"
+          >
+            <a
+              href="https://www.openstreetmap.org/?mlat=54.7041&mlon=25.2896#map=16/54.7041/25.2896"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-purple-700 hover:text-purple-900 font-semibold transition-colors duration-200"
+            >
+              <MapPin className="w-5 h-5" />
+              View larger map
+            </a>
+          </motion.div>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default HomePage;
+
+================================================================================
+
+
+FILE: components/WelcomeMessage.jsx
+================================================================================
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const WelcomeMessage = () => {
+  return (
+    <motion.p
+      className='text-sm text-white leading-5 w-full'
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.8 }}
+    >
+      Write in the chat what you want to create.
+    </motion.p>
+  );
+};
+
+export default WelcomeMessage;
+
+================================================================================
+
+
+FILE: components/CallToAction.jsx
+================================================================================
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const CallToAction = () => {
+  return (
+    <motion.h1
+      className='text-xl font-bold text-white leading-8 w-full'
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.5 }}
+    >
+      Let's turn your ideas into reality
+    </motion.h1>
+  );
+};
+
+export default CallToAction;
+
+================================================================================
+
+
+Modify the files according to the instruction. 
+
+IMPORTANT:
+- Return the COMPLETE modified content for EACH file
+- Do NOT return partial files or just the changes
+- Maintain proper syntax (React/JavaScript/CSS)
+- Keep all existing code that isn't affected by the instruction
+- Ensure imports and exports are correct
+
+Return your response as a JSON object where keys are file paths and values are the complete new file contents:
+
+{
+  "src/App.jsx": "complete file content here...",
+  "src/styles.css": "complete file content here..."
+}
+
+Return ONLY the JSON object. No explanation or markdown formatting.
+
+
+RESPONSE:
+{
+  "pages/HomePage.jsx": "import React from 'react';
+import { motion } from 'framer-motion';
+import { MapPin, Phone } from 'lucide-react';
+import { Helmet } from 'react-helmet';
+
+const HomePage = () => {
+  const galleryImages = [
+    { url: 'https://images.unsplash.com/photo-1563262924-641a8b3d397f', alt: 'Colorful candy assortment' },
+    { url: 'https://images.unsplash.com/photo-1672395974906-692dea813bea', alt: 'Premium sweets display' },
+    { url: 'https://images.unsplash.com/photo-1680518873896-13b23212bd4f', alt: 'Artisanal confections' },
+    { url: 'https://images.unsplash.com/photo-1601493701002-3223e7e1ebaf', alt: 'Sweet treats close-up' }
+  ];
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+  };
+
+  const scaleIn = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Vilnius Candy Pop - Premium Sweets & Confections in Vilnius</title>
+        <meta name=\"description\" content=\"Vilnius Candy Pop offers exquisite premium candies and sweets in Vilnius. Visit us at Gedimino pr. 11 or call (0-666) 21248 for the finest confections.\" />
+      </Helmet>
+
+      {/* Hero Section */}
+      <section className=\"min-h-screen relative flex items-center justify-center overflow-hidden\">
+        {/* Background Image */}
+        <div 
+          className=\"absolute inset-0 bg-cover bg-center\"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1696930150242-0d82f96630e9)' }}
+        />
+        
+        {/* Gradient Overlay */}
+        <div className=\"absolute inset-0 bg-gradient-to-br from-purple-900/80 via-violet-800/70 to-pink-700/60\" />
+        
+        {/* Layered Shadow Effect */}
+        <div className=\"absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent\" />
+        
+        {/* Content */}
+        <div className=\"relative z-10 text-center px-4 max-w-5xl mx-auto\">
+          <motion.h1
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className=\"text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 drop-shadow-2xl\"
+            style={{ textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+          >
+            Vilnius Candy Pop
+          </motion.h1>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+            className=\"text-xl md:text-2xl lg:text-3xl text-white/95 font-light tracking-wide drop-shadow-lg\"
+          >
+            Exquisite Sweets & Premium Confections
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: 'easeOut' }}
+            className=\"mt-10\"
+          >
+            <div className=\"inline-block px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl\">
+              <p className=\"text-white text-lg font-medium\">Where Flavor Meets Sweetness</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className=\"py-16 px-4 bg-gradient-to-b from-gray-50 to-white\">
+        <div className=\"max-w-7xl mx-auto\">
+          <motion.div
+            variants={fadeInUp}
+            initial=\"hidden\"
+            whileInView=\"visible\"
+            viewport={{ once: true, margin: '-100px' }}
+            className=\"text-center mb-12\"
+          >
+            <h2 className=\"text-4xl md:text-5xl font-bold text-gray-900 mb-4\">Our Sweet Collection</h2>
+            <p className=\"text-lg text-gray-600 max-w-2xl mx-auto\">
+              Discover our stunning selection of artisanal candies and treats
+            </p>
+          </motion.div>
+
+          <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6\">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={index}
+                variants={scaleIn}
+                initial=\"hidden\"
+                whileInView=\"visible\"
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ delay: index * 0.1 }}
+                className=\"group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 aspect-square\"
+              >
+                <img
+                  src={image.url}
+                  alt={image.alt}
+                  className=\"w-full h-full object-cover transition-transform duration-500 group-hover:scale-110\"
+                />
+                <div className=\"absolute inset-0 bg-gradient-to-t from-purple-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300\" />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Info Section */}
+      <section className=\"py-16 px-4 relative overflow-hidden\">
+        {/* Background with gradient */}
+        <div className=\"absolute inset-0 bg-gradient-to-br from-purple-600 via-violet-700 to-pink-600\" />
+        <div className=\"absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30\" />
+        
+        <div className=\"max-w-4xl mx-auto relative z-10\">
+          <motion.div
+            variants={fadeInUp}
+            initial=\"hidden\"
+            whileInView=\"visible\"
+            viewport={{ once: true, margin: '-100px' }}
+            className=\"bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl\"
+          >
+            <h2 className=\"text-4xl md:text-5xl font-bold text-white text-center mb-12\">Visit Us</h2>
+            
+            <div className=\"space-y-8\">
+              {/* Business Name */}
+              <motion.div
+                variants={fadeInUp}
+                className=\"text-center\"
+              >
+                <h3 className=\"text-3xl md:text-4xl font-bold text-white mb-2\">Vilnius Candy Pop</h3>
+                <div className=\"w-24 h-1 bg-gradient-to-r from-pink-400 to-purple-400 mx-auto rounded-full\" />
+              </motion.div>
+
+              {/* Address */}
+              <motion.div
+                variants={fadeInUp}
+                className=\"flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/10 transition-all duration-300\"
+              >
+                <div className=\"flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center\">
+                  <MapPin className=\"w-6 h-6 text-white\" />
+                </div>
+                <div className=\"flex-1\">
+                  <p className=\"text-sm text-white/70 font-medium mb-1\">Address</p>
+                  <p className=\"text-xl text-white font-semibold\">Gedimino pr. 11</p>
+                  <p className=\"text-lg text-white/90\">Vilnius, Lithuania</p>
+                </div>
+              </motion.div>
+
+              {/* Phone */}
+              <motion.div
+                variants={fadeInUp}
+                className=\"flex items-start gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/10 transition-all duration-300\"
+              >
+                <div className=\"flex-shrink-0 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center\">
+                  <Phone className=\"w-6 h-6 text-white\" />
+                </div>
+                <div className=\"flex-1\">
+                  <p className=\"text-sm text-white/70 font-medium mb-1\">Phone</p>
+                  <a 
+                    href=\"tel:066621248\" 
+                    className=\"text-2xl text-white font-semibold hover:text-pink-200 transition-colors duration-200\"
+                  >
+                    (0-666) 21248
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section className=\"py-16 px-4 bg-gradient-to-b from-gray-50 to-gray-100\">
+        <div className=\"max-w-6xl mx-auto\">
+          <motion.div
+            variants={fadeInUp}
+            initial=\"hidden\"
+            whileInView=\"visible\"
+            viewport={{ once: true, margin: '-100px' }}
+            className=\"text-center mb-10\"
+          >
+            <h2 className=\"text-4xl md:text-5xl font-bold text-gray-900 mb-4\">Find Us</h2>
+            <p className=\"text-lg text-gray-600\">We're conveniently located in the heart of Vilnius</p>
+          </motion.div>
+
+          <motion.div
+            variants={scaleIn}
+            initial=\"hidden\"
+            whileInView=\"visible\"
+            viewport={{ once: true, margin: '-100px' }}
+            className=\"rounded-2xl overflow-hidden shadow-2xl border-4 border-white\"
+          >
+            <iframe
+              src=\"https://www.openstreetmap.org/export/embed.html?bbox=25.2760%2C54.6782%2C25.2960%2C54.6982&layer=mapnik&marker=54.6882%2C25.2860\"
+              width=\"100%\"
+              height=\"450\"
+              style={{ border: 0 }}
+              loading=\"lazy\"
+              title=\"Vilnius Candy Pop Location Map\"
+              className=\"w-full\"
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            initial=\"hidden\"
+            whileInView=\"visible\"
+            viewport={{ once: true, margin: '-100px' }}
+            className=\"text-center mt-6\"
+          >
+            <a
+              href=\"https://www.openstreetmap.org/?mlat=54.6882&mlon=25.2860#map=16/54.6882/25.2860\"
+              target=\"_blank\"
+              rel=\"noopener noreferrer\"
+              className=\"inline-flex items-center gap-2 text-purple-700 hover:text-purple-900 font-semibold transition-colors duration-200\"
+            >
+              <MapPin className=\"w-5 h-5\" />
+              View larger map
+            </a>
+          </motion.div>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default HomePage;
+",
+  "components/WelcomeMessage.jsx": "import React from 'react';
+import { motion } from 'framer-motion';
+
+const WelcomeMessage = () => {
+  return (
+    <motion.p
+      className='text-sm text-white leading-5 w-full'
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.8 }}
+    >
+      Write in the chat what you want to create.
+    </motion.p>
+  );
+};
+
+export default WelcomeMessage;
+",
+  "components/CallToAction.jsx": "import React from 'react';
+import { motion } from 'framer-motion';
+
+const CallToAction = () => {
+  return (
+    <motion.h1
+      className='text-xl font-bold text-white leading-8 w-full'
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.5 }}
+    >
+      Let's turn your ideas into reality
+    </motion.h1>
+  );
+};
+
+export default CallToAction;
+"
+}

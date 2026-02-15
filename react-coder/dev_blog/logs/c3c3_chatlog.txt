@@ -1,0 +1,273 @@
+
+---
+REQUEST:
+You are analyzing a Vite/React/Tailwind CSS codebase to determine which files need to be modified.
+
+Project Structure:
+            Total files: 16
+            Files by type: {'css': 1, 'jsx': 13, 'js': 2}
+
+            File Tree:
+            ├── src/
+  ├── App.jsx (0.4KB) - Functions: App
+  ├── components/
+    ├── CallToAction.jsx (0.4KB) - Functions: CallToAction
+    ├── HeroImage.jsx (2.1KB) - Functions: HeroImage
+    ├── ScrollToTop.jsx (0.3KB) - Functions: ScrollToTop
+    ├── TodoApp.jsx (5.4KB) - Functions: TodoApp
+    ├── TodoForm.jsx (1.4KB) - Functions: TodoForm
+    ├── TodoItem.jsx (4.8KB) - Functions: TodoItem
+    ├── WelcomeMessage.jsx (0.4KB) - Functions: WelcomeMessage
+    ├── ui/
+      ├── button.jsx (1.5KB) - Functions: Button, Comp
+      ├── toast.jsx (3.7KB) - Functions: Toast, ToastAction, ToastClose, ToastDescription, ToastProvider
+      ├── toaster.jsx (0.7KB) - Functions: Toaster
+      ├── use-toast.js (2.0KB)
+  ├── index.css (0.3KB)
+  ├── lib/
+    ├── utils.js (0.1KB)
+  ├── main.jsx (0.2KB)
+  ├── pages/
+    ├── HomePage.jsx (1.2KB) - Functions: HomePage
+            
+
+User instruction: "Change the Add Todo button from black to green"
+
+Analyze the instruction and file structure. Identify which files need to be modified to fulfill this instruction.
+
+Guidelines:
+- Be selective - only include files that will actually change
+- Consider component hierarchy and imports
+- For styling changes, include relevant CSS files
+- For component changes, include the component file and possibly parent files
+
+Return ONLY a JSON array of file paths, like: ["src/App.jsx", "src/styles.css"]
+No explanation, just the JSON array.
+
+
+RESPONSE:
+["src/components/TodoForm.jsx","src/components/ui/button.jsx"]
+
+---
+REQUEST:
+You are modifying a React codebase based on user instructions.
+
+User instruction: "Change the Add Todo button from black to green"
+
+Current files:
+
+FILE: components/TodoForm.jsx
+================================================================================
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+
+const TodoForm = ({ onAddTodo }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmedValue = inputValue.trim();
+    
+    if (trimmedValue) {
+      onAddTodo(trimmedValue);
+      setInputValue('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="What needs to be done?"
+          className="flex-1 px-4 py-3 bg-red-50 text-gray-900 placeholder-gray-400 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
+        />
+        <motion.button
+          type="submit"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+        >
+          <Plus size={20} />
+          <span className="hidden sm:inline">Add Todo</span>
+        </motion.button>
+      </div>
+    </form>
+  );
+};
+
+export default TodoForm;
+
+================================================================================
+
+
+FILE: components/ui/button.jsx
+================================================================================
+import { cn } from '@/lib/utils';
+import { Slot } from '@radix-ui/react-slot';
+import { cva } from 'class-variance-authority';
+import React from 'react';
+
+const buttonVariants = cva(
+	'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+	{
+		variants: {
+			variant: {
+				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+				destructive:
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+				outline:
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+				secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+				ghost: 'hover:bg-accent hover:text-accent-foreground',
+				link: 'text-primary underline-offset-4 hover:underline',
+			},
+			size: {
+				default: 'h-10 px-4 py-2',
+				sm: 'h-9 rounded-md px-3',
+				lg: 'h-11 rounded-md px-8',
+				icon: 'h-10 w-10',
+			},
+		},
+		defaultVariants: {
+			variant: 'default',
+			size: 'default',
+		},
+	},
+);
+
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+	const Comp = asChild ? Slot : 'button';
+	return (
+		<Comp
+			className={cn(buttonVariants({ variant, size, className }))}
+			ref={ref}
+			{...props}
+		/>
+	);
+});
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+
+================================================================================
+
+
+Modify the files according to the instruction. 
+
+IMPORTANT:
+- Return the COMPLETE modified content for EACH file
+- Do NOT return partial files or just the changes
+- Maintain proper syntax (React/JavaScript/CSS)
+- Keep all existing code that isn't affected by the instruction
+- Ensure imports and exports are correct
+
+Return your response as a JSON object where keys are file paths and values are the complete new file contents:
+
+{
+  "src/App.jsx": "complete file content here...",
+  "src/styles.css": "complete file content here..."
+}
+
+Return ONLY the JSON object. No explanation or markdown formatting.
+
+
+RESPONSE:
+{
+  "components/TodoForm.jsx": "import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+
+const TodoForm = ({ onAddTodo }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmedValue = inputValue.trim();
+    
+    if (trimmedValue) {
+      onAddTodo(trimmedValue);
+      setInputValue('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className=\"w-full\">
+      <div className=\"flex gap-2\">
+        <input
+          type=\"text\"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder=\"What needs to be done?\"
+          className=\"flex-1 px-4 py-3 bg-red-50 text-gray-900 placeholder-gray-400 rounded-lg border-2 border-red-200 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200\"
+        />
+        <motion.button
+          type=\"submit\"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className=\"px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2\"
+        >
+          <Plus size={20} />
+          <span className=\"hidden sm:inline\">Add Todo</span>
+        </motion.button>
+      </div>
+    </form>
+  );
+};
+
+export default TodoForm;
+",
+  "components/ui/button.jsx": "import { cn } from '@/lib/utils';
+import { Slot } from '@radix-ui/react-slot';
+import { cva } from 'class-variance-authority';
+import React from 'react';
+
+const buttonVariants = cva(
+	'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+	{
+		variants: {
+			variant: {
+				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+				destructive:
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+				outline:
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+				secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+				ghost: 'hover:bg-accent hover:text-accent-foreground',
+				link: 'text-primary underline-offset-4 hover:underline',
+			},
+			size: {
+				default: 'h-10 px-4 py-2',
+				sm: 'h-9 rounded-md px-3',
+				lg: 'h-11 rounded-md px-8',
+				icon: 'h-10 w-10',
+			},
+		},
+		defaultVariants: {
+			variant: 'default',
+			size: 'default',
+		},
+	},
+);
+
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+	const Comp = asChild ? Slot : 'button';
+	return (
+		<Comp
+			className={cn(buttonVariants({ variant, size, className }))}
+			ref={ref}
+			{...props}
+		/>
+	);
+});
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+"
+}
