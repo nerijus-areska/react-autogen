@@ -128,7 +128,14 @@ class SimpleModificationWorkflow(BaseWorkflow):
                 lines.append(self._tree_to_text_with_functions(session_path, child, indent + 1))
         
         return "\n".join(lines)
-    
+
+    def _previous_commands_block(self, session: Session) -> str:
+        """Format previous user commands for context in prompts (current task is passed separately)."""
+        previous = session.user_questions[:-1] if len(session.user_questions) > 1 else []
+        if not previous:
+            return ""
+        return "\nPREVIOUS USER COMMANDS (for context; current task is below):\n" + "\n".join(f"- {q}" for q in previous) + "\n\n"
+
     async def _identify_files(self, session: Session, llm: LLMClient, instruction: str, file_tree: str) -> List[str]:
         """
         Use LLM to identify which files need modification.
@@ -141,8 +148,9 @@ class SimpleModificationWorkflow(BaseWorkflow):
         Returns:
             List of relative file paths to modify
         """
+        previous_block = self._previous_commands_block(session)
         prompt = f"""You are analyzing a Vite/React/Tailwind CSS codebase to determine which files need to be modified.
-
+{previous_block}
 {file_tree}
 
 User instruction: "{instruction}"
@@ -209,9 +217,9 @@ FILE: {filepath}
 """)
         
         files_text = "\n".join(files_section)
-        
+        previous_block = self._previous_commands_block(session)
         prompt = f"""You are modifying a React codebase based on user instructions.
-
+{previous_block}
 User instruction: "{instruction}"
 
 Current files:

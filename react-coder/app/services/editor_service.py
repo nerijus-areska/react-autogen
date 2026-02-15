@@ -99,6 +99,7 @@ class EditorService:
 
         session = _active_sessions[session_id]
         session_path = session.path
+        session.user_questions.append(instruction)
 
         await self._apply_ai_changes(
             session,

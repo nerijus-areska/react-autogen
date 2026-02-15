@@ -29,10 +29,14 @@ def _workflow_log_path(session_id: str) -> Path:
 
 
 def write_workflow_log(session_id: str, content: str) -> None:
-    """Write the formatted conversation history once to the session's workflow log (explorative workflow)."""
+    """Append the formatted conversation history to the session's workflow log. File is reused across the session."""
     log_path = _workflow_log_path(session_id)
-    with open(log_path, "w", encoding="utf-8") as f:
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write("\n")
+        f.write("=" * 80)
+        f.write("\n\n")
         f.write(content)
+        f.write("\n")
 
 
 def _append_exchange(prompt: str, response: str, session_id: str) -> None:

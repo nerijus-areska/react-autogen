@@ -239,12 +239,59 @@ Let's add all the previous user questions into both workflows (so we can ask "Ac
 This should enable semi-true multi-turn ( since we're not adding responses )
 Also - let's use multi-turn flow to develop a bigger app and record both workflows in detail
 
-# TODO
-If time permits:
-- Add All user questions in the session to the workflows - demo multiturn
-- 
-# Conclusions
 
+### Explorative Multi-turn
+`change the Add Todo button color from black to green`
+
+![](images/Pasted%20image%2020260215160745.png)
+
+`Now add a red button to clear all the completed todo tasks in the bottom`
+
+![](images/Pasted%20image%2020260215160957.png)
+
+`I hate the add todo button color - change it back`
+![](images/Pasted%20image%2020260215161105.png)
+Snippet from workflow (To prove "Change it back" knew what to change it back to):
+```
+================================================================================
+
+[USER]
+You are an expert code modification agent working on a React codebase.
+
+
+PREVIOUS USER COMMANDS (for context; current task is below):
+- change the Add Todo button color from black to green
+- Now add a red button to clear all the completed todo tasks in the bottom
+
+TASK: I hate the add todo button color - change it back
+```
+
+Workflow log: [e240_workflow](logs/e240_workflow.txt)
+Total time taken: 13.3+32.8+15.9=**62s**
+Total input tokens: *38,676*
+Total output tokens: *5,269*
+Total estimated cost: *$0.0202*
+
+### Simple multi-turn
+`change the Add Todo button color from black to green`
+![](images/Pasted%20image%2020260215161918.png)
+`Now add a red button to clear all the completed todo tasks in the bottom`
+![](images/Pasted%20image%2020260215161954.png)
+`I hate the add todo button color - change it back`
+![](images/Pasted%20image%2020260215162104.png)
+
+Chatlog: [9d90_chatlog](logs/9d90_chatlog.txt)
+Total time taken: 10.6+34.2+12.6=**57.4s**
+Total input tokens: *4,271*
+Total output tokens: *4,810*
+Total estimated cost: *$0.0107*
+# Conclusions
+The last multi-turn chat turned out - the simple modification route while writing whole files performed twice cheaper compared to tool user.
+It's pretty surprising that tool user consumed a tiny bit more output tokens.. but why??
+
+- Well, the most of the tokens were generating new functionality, so that's equal for both of them
+- for very simple cases, like changing button color, tool user adds all the tool calls anyway - and these sum up to more, than simple modificator just outputting the full file.. ( since the file is small! )
+- I think the tool user can be tuned to outperform the full file modification with more direct instructions
 
 
 # Afterthoughts
@@ -253,6 +300,7 @@ If time permits:
 	- The projects use v3, so we're fine, but moving forward - if we care about the token cost - we should NOT upgrade to v4
 - There's a gazillion of edge cases - conflicting/wrong/vague user prompts possible. I tried writing these prompts as a non-techie, but I am suffering from a HUGE knowledge curse. This is a _weak point_ of this project (it may not be shippable in such architecture at all)
 - I completely ignored security. Tool caller workflow is executing shell commands freely. The hack attempts are quite hard to execute though. And in this case they would be done by paying users, who have credit card information on the website builder.. I really doubt they are doing any attacks whatsoever, so maybe that's not a huge issue?
+- I also ignored linting and retries. Not really needed while researching the project, but critical in prod (and I had few cases of failures)
 - The App given to me was not a correct React app. I think we can get way better results (at least with simple_modification workflow), if we force a proper directory structure from Prompt 1, smthing like this:
   ![](images/Pasted%20image%2020260215133656.png)
 Having features as separate microcosms, allows for having a clear separation of concerns, and MUCH smaller files, which then should save on output tokens for simple_modification workflow.

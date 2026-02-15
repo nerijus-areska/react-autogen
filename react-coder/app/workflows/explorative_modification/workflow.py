@@ -58,7 +58,7 @@ class ExplorativeModificationWorkflow(BaseWorkflow):
         self.conversation_history = []
         self.tool_executions = []
         
-        initial_prompt = self._build_initial_prompt(instruction, session_path)
+        initial_prompt = self._build_initial_prompt(session, instruction, session_path)
         self.conversation_history.append({
             "role": "user",
             "content": initial_prompt
@@ -159,15 +159,22 @@ class ExplorativeModificationWorkflow(BaseWorkflow):
         lines.append("")
         logger.info("\n".join(lines))
     
-    def _build_initial_prompt(self, instruction: str, session_path: Path) -> str:
+    def _build_initial_prompt(self, session: Session, instruction: str, session_path: Path) -> str:
         """Build the initial prompt with tool descriptions and task."""
         
         # Get basic file tree
         file_tree = generate_file_tree(session_path, max_depth=3)
         tree_text = self._tree_to_simple_text(file_tree)
+
+        previous_commands = session.user_questions[:-1] if len(session.user_questions) > 1 else []
+        previous_block = ""
+        if previous_commands:
+            previous_block = "\n\nPREVIOUS USER COMMANDS (for context; current task is below):\n" + "\n".join(
+                f"- {q}" for q in previous_commands
+            ) + "\n"
         
         return f"""You are an expert code modification agent working on a React codebase.
-
+{previous_block}
 TASK: {instruction}
 
 Use relative paths from the project root in all tools (e.g. src/App.jsx, components/Header.jsx).

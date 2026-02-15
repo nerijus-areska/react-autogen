@@ -1,8 +1,8 @@
 import io
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 import subprocess
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Session(BaseModel):
@@ -15,3 +15,4 @@ class Session(BaseModel):
     input_tokens: int = 0
     output_tokens: int = 0
     workflow: Optional[str] = None
+    user_questions: List[str] = Field(default_factory=list)
