@@ -37,7 +37,7 @@ htmlcov/
 temp_sessions/
 
 # My own stuff
-.obsidian
+**/.obsidian
 
 # client history
 .vibe_history
