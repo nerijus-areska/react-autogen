@@ -2,6 +2,8 @@
 
 AI-powered code modification system for React projects. Describe what you want in natural language, and the AI modifies your Vite/React/TailwindCSS codebase — with live preview and git-tracked diffs.
 
+📝 [Development Blog](react-coder/dev_blog/blog.md)
+
 ## How It Works
 
 1. **Initialize** a session pointing at one of your React projects
